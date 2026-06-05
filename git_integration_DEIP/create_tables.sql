@@ -151,3 +151,4 @@ create table if not exists staging.inc_config_table (
 insert into staging.inc_config_table (id, last_load_timestamp) values
 (1, '2024-01-01 11:00:00')
 on conflict (id) do update set last_load_timestamp = EXCLUDED.last_load_timestamp;
+

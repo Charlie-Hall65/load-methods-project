@@ -64,11 +64,3 @@ select * from landing.incremental_source;
 select * from staging.incremental_target;
 call incremental_load();
 select * from staging.incremental_target;
-call delete_tables('staging.incremental_target', 'landing.incremental_source');
-
-insert into staging.incremental_target (id, name, job_title, updated_at) values
-(1, 'Alice', 'Senior Data Engineer', '2024-01-01 10:00:00'),
-(2, 'Bob', 'Lead Data Scientist', '2024-01-01 11:00:00'),
-(3, 'Charlie', 'Data Analyst', '2024-01-01 12:00:00');
-
-select * from staging.incremental_target;
