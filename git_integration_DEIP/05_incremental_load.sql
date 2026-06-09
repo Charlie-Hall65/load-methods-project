@@ -13,9 +13,10 @@ create or replace procedure add_data(
     p_job_title varchar(255),
     in_source_table varchar
 )
-language plpgsql
+language plpgsql --Need plpgsql to use execute format and exception handling
 as $$
 begin
+    --Use execute format to dynamically construct the SQL statement for inserting or updating records in the source table based on the provided parameters. The ON CONFLICT clause ensures that if a record with the same ID already exists, it will be updated with the new values instead of inserting a duplicate.
     execute format(
         'INSERT INTO %s (id, name, job_title, updated_at)
         VALUES (%s, %L, %L, %L)
@@ -36,8 +37,9 @@ create or replace procedure incremental_load()
 language plpgsql
 as $$
 declare
-    v_last_load_timestamp timestamp;
+    v_last_load_timestamp timestamp; --Variable to store the last load timestamp retrieved from the config table
 begin
+    --Retrieve the last load timestamp from the config table to determine which records in the source table are new or have been updated since the last load. This timestamp will be used to filter the records that need to be loaded into the target table.
     select max(last_load_timestamp) into v_last_load_timestamp 
     from staging.inc_config_table;
     insert into staging.incremental_target (id, name, job_title, updated_at)
@@ -52,6 +54,7 @@ begin
     from landing.incremental_source l
     where l.updated_at > v_last_load_timestamp);
 
+    --Log the operation in the audit table
     insert into audit.audit_log (table_name, operation, timestamp, success, error_message)
     values ('staging.incremental_target', 'INCREMENTAL_LOAD', now(), true, null);
 exception when others then
@@ -60,6 +63,7 @@ exception when others then
 end;
 $$;
 
+--Incremental load test
 select * from landing.incremental_source;
 select * from staging.incremental_target;
 call incremental_load();
